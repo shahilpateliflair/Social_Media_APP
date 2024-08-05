@@ -1,0 +1,275 @@
+?>>>>>>>>>>>>>>>>>>>>.. here in authentication token
+
+        // if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError') {
+        //     const decoded = jwt.decode(token);
+        //     if (decoded && decoded.userId) {
+        //       const user = await userModel.findById(decoded.userId);
+        //       if (user) {
+        //         user.active = false;
+        //         await user.save();
+        //       }
+        //     }
+        //   }
+
+
+
+>>>>>>>>>>>>>> used for fetch active or not
+// app.get('/users/:id', async (req, res) => {
+//   try {
+//     const user = await userModel.findById(req.params.id);
+//     if (user) {
+//       res.json(user);
+//     } else {
+//       res.status(404).json({ error: 'User not found' });
+//     }
+//   } catch (error) {
+//     console.error('Error fetching user:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+>>>>>>>>>>
+
+
+// const MONGOURI='mongodb+srv://shahilkumarpatel93:2UjH7C7pwHDFFg1e@social-media.dimhcce.mongodb.net/'
+
+// mongoose.connect(MONGOURI, { useNewUrlParser: true, useUnifiedTopology: true })
+//     .then(() => {
+//         console.log('Connected to MongoDB');
+//     })
+//     .catch(error => {
+//         console.error('Error connecting to MongoDB:', error);
+//     });
+
+
+
+//>>>>>>>. get profile api for get data who is login
+app.get('/profile/:id', async (req, res) => {
+  try {
+    const profileId = req.params.id; 
+    console.log('Received profile ID:', profileId); 
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(profileId);
+    if (!isValidObjectId) {
+      return res.status(400).json({ error: 'Invalid profile ID' });
+    }
+    
+    const profile = await userModel.findById(profileId);
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    res.json({ profile });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+/// send otp for nodemailer
+
+
+// app.post('/profile/send-otp', authenticateToken, async (req, res) => {
+//   try {
+//     const { email } = req.body;
+//     console.log('Received request to send OTP to email:', email);
+
+//     const otp = Math.floor(100000 + Math.random() * 900000);
+//     const token = jwt.sign({ email, otp }, JWT_SECRET, { expiresIn: '10m' });
+//     const transporter = nodemailer.createTransport({
+//             service: 'gmail',
+//             auth: {
+//               user: 'shahilkumarpatel93@gmail.com',
+//               pass: 'shahilpatel1208@93' 
+//             }
+//           });
+
+//     const mailOptions = {
+//       from: 'panchalshivang938@gmail.com',
+//       to: email,
+//       subject: 'OTP for Password Change',
+//       text: `Your OTP for password change is: ${otp}`
+//     };
+
+//     console.log('Sending OTP email to:', email);
+
+//     await transporter.sendMail(mailOptions);
+
+//     console.log('OTP email sent successfully.');
+
+//     res.status(200).json({ token });
+//   } catch (error) {
+//     console.error('Error sending OTP:', error);
+//     res.status(500).json({ message: 'Failed to send OTP. Please try again.' });
+//   }
+// });
+
+
+// app.post('/profile/verify-otp', authenticateToken, async (req, res) => {
+//   const { otp } = req.body;
+
+//   jwt.verify(req.token, 'secret_key', (err, authData) => {
+//     if (err) {
+//       res.sendStatus(403);
+//     } else {
+//       if (authData.otp === otp) {
+//         res.sendStatus(200);
+//       } else {
+//         res.status(400).json({ message: 'Invalid OTP' });
+//       }
+//     }
+//   });
+// });
+
+///>>>>>>>>>>>>>>>>>. put api>>>>>>>>>>>>>>>>>>>>>>>>>
+
+app.put("/profile/:id", upload.single("image"), async (req, res) => {
+  const userId = req.params.id;
+
+  const { name, email, address, username, bio, country, number, gender, age } =
+    req.body;
+
+  console.log("Request Body:", req.body);
+
+  const imagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
+  try {
+    if (!userId) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userId,
+      {
+        name,
+        email,
+        address,
+        username,
+        bio,
+        country,
+        number,
+        gender,
+        age,
+        imageUrl: imagePath,
+      },
+      { new: true } 
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+
+//use for login ,register , logout api
+
+
+// app.post("/login", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await userModel.findOne({ email });
+//     if (!user || !(await bcrypt.compare(password, user.password))) {
+//       return res.status(400).json({ message: "Invalid email or password" });
+//     }
+
+//     user.active = true;
+//     await user.save();
+
+//     const token = jwt.sign(
+//       { userId: user._id, email: user.email },
+//       JWT_SECRET,
+//       { expiresIn: "10h" }
+//     );
+//     console.log("Generated Token:", token);
+
+//     res.json({
+//       token,
+//       user,
+//       email: user.email,
+//       name: user.name,
+//       address: user.address,
+//     });
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+// // app.use('/api', OTPRoutes);
+
+
+// app.post("/register", validatePassword, async (req, res) => {
+//   const {
+//     name,
+//     email,
+//     password,
+//     address,
+//     age,
+//     gender,
+//     country,
+//     username,
+//     number,
+//   } = req.body;
+
+//   try {
+//     const existingUser = await userModel.findOne({ email });
+//     if (existingUser) {
+//       return res
+//         .status(400)
+//         .send("User already registered, please try to login");
+//     }
+
+//     const encryptedPassword = await bcrypt.hash(password, 10);
+//     const newUser = new userModel({
+//       name,
+//       email: email.toLowerCase(),
+//       password: encryptedPassword,
+//       address,
+//       age,
+//       gender,
+//       country,
+//       number,
+//       username,
+//     });
+
+//     const savedUser = await newUser.save();
+//     const token = jwt.sign(
+//       { userId: savedUser._id, email: savedUser.email },
+//       JWT_SECRET,
+//       { expiresIn: "10h" }
+//     );
+//     res.status(201).json({ token, user: savedUser });
+//   } catch (error) {
+//     console.error("Registration error:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+
+
+// app.post("/logout", authenticateToken, async (req, res) => {
+//   try {
+//     const user = await userModel.findById(req.userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     user.active = false;
+//     await user.save();
+
+//     res.status(200).json({ message: "Logged out successfully" });
+//   } catch (error) {
+//     console.error("Logout error:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
