@@ -10,6 +10,24 @@ const { tweetModel } = require("../models/timeline");
 const { storyModel } = require("../models/story");
 const router = express.Router();
 
+router.get("/profile", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const userProfile = await userModel
+      .findById(userId)
+      .populate("followers", "name username imageUrl active");
+
+    if (!userProfile) {
+      return res.status(404).json({ message: "User profile not found" });
+    }
+
+    res.status(200).json(userProfile);
+  } catch (error) {
+    console.error("Error retrieving user profile:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 // Profile update route
 router.patch("/profile/:id", multer.single("image"), async (req, res) => {
   const userId = req.params.id;

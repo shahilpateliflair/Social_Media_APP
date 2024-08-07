@@ -33,4 +33,39 @@ router.get("/getAllUser", async (req, res) => {
   }
 });
 
+router.get("/usersByCity/:city", async (req, res) => {
+  const address = req.params.city;
+  try {
+    const users = await userModel.find({ address });
+    res.json({ users });
+  } catch (error) {
+    console.error("Error fetching users by city:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.get("/cities", async (req, res) => {
+  try {
+    const cities = await userModel.find().distinct("address");
+    res.json({ cities });
+  } catch (error) {
+    console.error("Error fetching cities:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+router.get("/usersByCity/:city", async (req, res) => {
+  const address = req.params.city;
+  try {
+    const users = await userModel.find({ address });
+    res.json({ users });
+  } catch (error) {
+    console.error("Error fetching users by city:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+
 module.exports = router;

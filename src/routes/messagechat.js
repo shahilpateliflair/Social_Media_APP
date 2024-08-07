@@ -49,6 +49,8 @@ router.get("/notifications", authenticateToken, async (req, res) => {
   }
 });
 
+
+
 router.post("/typing", async (req, res) => {
   const { senderId, receiverId, isTyping } = req.body;
   try {
