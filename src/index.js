@@ -2,9 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const dotenv =require( "dotenv");
+const dotenv = require("dotenv");
 const app = express();
 dotenv.config();
+
+console.log("MONGODB_URI:", process.env.MONGODB_URI); // Add this line to check if the variable is loaded
+
 app.use(express.json());
 app.use(cors({
   credentials: true,
