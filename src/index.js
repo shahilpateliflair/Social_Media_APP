@@ -7,8 +7,9 @@ const app = express();
 dotenv.config();
 
 console.log("MONGODB_URI:", process.env.MONGODB_URI); // Add this line to check if the variable is loaded
-
+const port = process.env.PORT || 5000;
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
   credentials: true,
   origin: ["http://localhost:4200"],
@@ -109,8 +110,7 @@ app.get("/lastActivity/:id", updateLastActive, async (req, res) => {
   }
 });
 
-// Start server
-const port = process.env.PORT || 5000;
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
